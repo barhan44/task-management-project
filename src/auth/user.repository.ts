@@ -7,10 +7,12 @@ import * as bcrypt from 'bcrypt';
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
     async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-        const { username, password } = authCredentialsDto;
+        const { username, password, firstName, lastName } = authCredentialsDto;
 
         const user = new User();
         user.username = username;
+        user.firstName = firstName;
+        user.lastName = lastName;
         user.salt = await bcrypt.genSalt();
         user.password = await this.hashPassword(password, user.salt);
 
@@ -22,6 +24,16 @@ export class UserRepository extends Repository<User> {
             } else {
                 throw new InternalServerErrorException();
             }
+        }
+    }
+
+    async getUserFullName(authCredentialsDto: AuthCredentialsDto): Promise<{firstName: string, lastName: string}> {
+        const { username } = authCredentialsDto;
+        const user = await this.findOne({username});
+        if (user) {
+            return { firstName: user.firstName, lastName: user.lastName};
+        } else {
+            return null;
         }
     }
 
