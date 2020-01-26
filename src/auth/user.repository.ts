@@ -3,6 +3,7 @@ import { User } from './user.entity';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { ConflictException, InternalServerErrorException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { UserFullName } from './interfaces/user-full-name.interface';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -27,8 +28,7 @@ export class UserRepository extends Repository<User> {
         }
     }
 
-    async getUserFullName(authCredentialsDto: AuthCredentialsDto): Promise<{firstName: string, lastName: string}> {
-        const { username } = authCredentialsDto;
+    async getUserFullName(username: string): Promise<UserFullName> {
         const user = await this.findOne({username});
         if (user) {
             return { firstName: user.firstName, lastName: user.lastName};

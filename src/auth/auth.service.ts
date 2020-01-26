@@ -4,7 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt-payload.interface';
-import { UserData } from './interfaces/user-data.interface';
+import { AccessToken } from './interfaces/user-data.interface';
+import { UserFullName } from './interfaces/user-full-name.interface';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,7 @@ export class AuthService {
         return this.userRepository.signUp(authCredentialsDto);
     }
 
-    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<UserData> {
+    async signIn(authCredentialsDto: AuthCredentialsDto): Promise<AccessToken> {
         const username = await this.userRepository.validateUserPassword(authCredentialsDto);
 
         if (!username) {
@@ -30,9 +31,12 @@ export class AuthService {
 
         const payload: JwtPayload = { username };
         const accessToken = await this.jwtService.sign(payload);
-        const userFullName = await this.userRepository.getUserFullName(authCredentialsDto);
         this.logger.debug(`Generated JWT Token with payload ${JSON.stringify(payload)}`);
 
-        return { accessToken, firstName: userFullName.firstName, lastName: userFullName.lastName };
+        return { accessToken };
+    }
+
+    async getUserFullName(username: string): Promise<UserFullName> {
+        return this.userRepository.getUserFullName(username);
     }
 }
